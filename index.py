@@ -67,8 +67,14 @@ class AIClientAdapter:
     def __init__(self, client_mode, ollama_url):
         self.client_mode = client_mode
         self.ollama_url = f"{ollama_url}/api/chat"
-        self.openai_client = OpenAI(api_key=openai_api_key)
         self.groq_client = Groq(api_key=groq_api_key)
+        # Only initialize OpenAI if needed (for gpt models)
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+        if openai_api_key:
+            from openai import OpenAI
+            self.openai_client = OpenAI(api_key=openai_api_key)
+        else:
+            self.openai_client = None
         self.gemini_client = genai.Client(api_key=gemini_api_key)
 
     def chat_completions_create(self, model, messages, temperature=0.2, response_format=None):
@@ -96,8 +102,10 @@ class AIClientAdapter:
             response = requests.post(self.ollama_url, json=data)
             return json.loads(response.text)["message"]["content"]
         elif self.client_mode == "ONLINE":
-            # Use OpenAI or Groq client based on the model
+            # Use Groq client for llama models, OpenAI for gpt models if available
             if "gpt" in model:
+                if self.openai_client is None:
+                    raise RuntimeError("OpenAI client not initialized. Please set OPENAI_API_KEY if you want to use GPT models.")
                 return self.openai_client.chat.completions.create(
                     model=model,
                     messages=messages,
@@ -114,7 +122,6 @@ class AIClientAdapter:
             elif "gemini" in model:
                 system_instruction = messages[0]["content"]
                 transcript = messages[1]["content"]
-
                 contents = [
                     types.Content(
                         role="user",
@@ -123,7 +130,6 @@ class AIClientAdapter:
                         ],
                     ),
                 ]
-
                 generate_content_config = types.GenerateContentConfig(
                     temperature=1,
                     top_p=0.95,
@@ -163,13 +169,11 @@ class AIClientAdapter:
                         types.Part.from_text(text=system_instruction),
                     ],
                 )
-
                 response = self.gemini_client.models.generate_content(
                     model=gemini[model],
                     contents=contents,
                     config=generate_content_config,
                 ).text
-
                 return response
 
 class EmbeddingAdapter:
