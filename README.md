@@ -1,24 +1,3 @@
-<div align="center">
-  <h2>Amurex Backend</h2>
-
-  <p>
-    <a href="https://github.com/thepersonalaicompany/amurex/blob/main/LICENSE">
-      <img src="https://img.shields.io/badge/license-AGPL--3.0-blue.svg" alt="License" />
-    </a>
-    <a href="https://chrome.google.com/webstore/detail/amurex/dckidmhhpnfhachdpobgfbjnhfnmddmc">
-      <img src="https://img.shields.io/chrome-web-store/v/dckidmhhpnfhachdpobgfbjnhfnmddmc.svg" alt="Chrome Web Store" />
-    </a>
-    <a href="https://twitter.com/thepersonalaico">
-      <img src="https://img.shields.io/twitter/follow/thepersonalaico?style=social" alt="Twitter Follow" />
-    </a>
-    <a href="https://discord.gg/ftUdQsHWbY">
-      <img alt="Discord" src="https://img.shields.io/discord/1306591395804348476">
-    </a>
-  </p>
-</div>
-
-
-
 ## Amurex Backend
 
 This is the backend for the entire Amurex project. You can use it to host your own backend instance of Amurex.
