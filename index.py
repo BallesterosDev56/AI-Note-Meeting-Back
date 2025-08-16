@@ -67,15 +67,25 @@ class AIClientAdapter:
     def __init__(self, client_mode, ollama_url):
         self.client_mode = client_mode
         self.ollama_url = f"{ollama_url}/api/chat"
-        self.groq_client = Groq(api_key=groq_api_key)
-        # Only initialize OpenAI if needed (for gpt models)
+        # Groq client
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        if groq_api_key:
+            self.groq_client = Groq(api_key=groq_api_key)
+        else:
+            self.groq_client = None
+        # OpenAI client
         openai_api_key = os.getenv("OPENAI_API_KEY")
         if openai_api_key:
             from openai import OpenAI
             self.openai_client = OpenAI(api_key=openai_api_key)
         else:
             self.openai_client = None
-        self.gemini_client = genai.Client(api_key=gemini_api_key)
+        # Gemini client
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
+        if gemini_api_key:
+            self.gemini_client = genai.Client(api_key=gemini_api_key)
+        else:
+            self.gemini_client = None
 
     def chat_completions_create(self, model, messages, temperature=0.2, response_format=None):
         # expect llama3.2 as the model name
@@ -113,6 +123,8 @@ class AIClientAdapter:
                     response_format=response_format
                 ).choices[0].message.content
             elif "llama" in model:
+                if self.groq_client is None:
+                    raise RuntimeError("Groq client not initialized. Please set GROQ_API_KEY if you want to use Llama models.")
                 return self.groq_client.chat.completions.create(
                     model=groq[model],
                     messages=messages,
@@ -120,6 +132,8 @@ class AIClientAdapter:
                     response_format=response_format
                 ).choices[0].message.content
             elif "gemini" in model:
+                if self.gemini_client is None:
+                    raise RuntimeError("Gemini client not initialized. Please set GEMINI_API_KEY if you want to use Gemini models.")
                 system_instruction = messages[0]["content"]
                 transcript = messages[1]["content"]
                 contents = [
